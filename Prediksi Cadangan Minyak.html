@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediksi Cadangan Minyak</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #004b23, #0078d4);
+            color: white;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        main {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            max-width: 800px;
+            color: black;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .button {
+            background-color: #0078d4;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #005bb5;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e6f7ff;
+            border-radius: 10px;
+            text-align: center;
+            color: #003366;
+        }
+        .chart-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        canvas {
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Prediksi Cadangan Minyak</h1>
+        <p>Masukkan data reservoir untuk menghitung cadangan minyak Anda!</p>
+    </header>
+    <main>
+        <form id="reserve-form">
+            <div class="form-group">
+                <label for="area">Luas Reservoir (acres):</label>
+                <input type="number" id="area" step="0.1" placeholder="Contoh: 500" required>
+            </div>
+            <div class="form-group">
+                <label for="thickness">Ketebalan Reservoir (ft):</label>
+                <input type="number" id="thickness" step="0.1" placeholder="Contoh: 50" required>
+            </div>
+            <div class="form-group">
+                <label for="porosity">Porositas (%):</label>
+                <input type="number" id="porosity" step="0.1" placeholder="Contoh: 20" required>
+            </div>
+            <div class="form-group">
+                <label for="saturation">Saturasi Minyak (%):</label>
+                <input type="number" id="saturation" step="0.1" placeholder="Contoh: 70" required>
+            </div>
+            <div class="form-group">
+                <label for="recovery">Faktor Perolehan (%):</label>
+                <input type="number" id="recovery" step="0.1" placeholder="Contoh: 30" required>
+            </div>
+            <button type="button" class="button" onclick="calculateReserves()">Hitung Cadangan Minyak</button>
+        </form>
+        <div class="result" id="result" style="display: none;">
+            <h3>Hasil Perhitungan:</h3>
+            <p id="reserve-output"></p>
+        </div>
+        <div class="chart-container">
+            <canvas id="reserveChart" width="600" height="300"></canvas>
+        </div>
+    </main>
+    <script>
+        function calculateReserves() {
+            const area = parseFloat(document.getElementById('area').value);
+            const thickness = parseFloat(document.getElementById('thickness').value);
+            const porosity = parseFloat(document.getElementById('porosity').value) / 100;
+            const saturation = parseFloat(document.getElementById('saturation').value) / 100;
+            const recovery = parseFloat(document.getElementById('recovery').value) / 100;
+
+            if (isNaN(area) || isNaN(thickness) || isNaN(porosity) || isNaN(saturation) || isNaN(recovery)) {
+                alert("Harap masukkan nilai yang valid!");
+                return;
+            }
+
+            // Menghitung cadangan minyak
+            const BOE_PER_ACRE_FOOT = 7758; // BOE per acre-foot
+            const reserves = area * thickness * porosity * saturation * recovery * BOE_PER_ACRE_FOOT;
+
+            // Menampilkan hasil
+            const resultDiv = document.getElementById('result');
+            const reserveOutput = document.getElementById('reserve-output');
+            reserveOutput.textContent = `Cadangan Minyak: ${reserves.toFixed(2)} BOE`;
+            resultDiv.style.display = "block";
+
+            // Visualisasi data
+            const canvas = document.getElementById('reserveChart');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const labels = ['Luas', 'Ketebalan', 'Porositas', 'Saturasi', 'Faktor Perolehan'];
+            const values = [area, thickness, porosity * 100, saturation * 100, recovery * 100];
+
+            const maxValue = Math.max(...values);
+            const barWidth = 60;
+            const barSpacing = 40;
+
+            values.forEach((value, index) => {
+                const barHeight = (value / maxValue) * 200;
+                const x = 50 + index * (barWidth + barSpacing);
+                const y = canvas.height - barHeight - 50;
+
+                ctx.fillStyle = '#0078d4';
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                ctx.fillStyle = '#000';
+                ctx.fillText(labels[index], x + 5, canvas.height - 20);
+                ctx.fillText(value.toFixed(1), x + 10, y - 10);
+            });
+        }
+    </script>
+</body>
+</html>
